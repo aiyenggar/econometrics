@@ -11,26 +11,25 @@ import matplotlib.pyplot as plt
 
 XDIVERGENCE = 173
 XMEANFACTOR = 239
-MUDIVERGENCE = 17
+UDIVERGENCE = 17
 
 SAMPLE_START = 100
 SAMPLE_END = 1000
 SAMPLE_STEP = 100
 """
 Model is as follows
-y = beta0 + beta1 * x + mu
+y = beta0 + beta1 * x + u
 """
 def modelCompute(xVal, b0, b1, u):
     return b0 + b1 * xVal + u
 
 beta0 = 10.0
 beta1 = 5.0
-mu = -35
 
 xMean = random.random() * XMEANFACTOR
 xVariance = random.random() * XDIVERGENCE
-muMean = 0.0
-muVariance = random.random() * MUDIVERGENCE
+uMean = 0.0
+uVariance = random.random() * UDIVERGENCE
 
 sampleSize = []
 samples = SAMPLE_START
@@ -49,7 +48,7 @@ nextFigure = 1
 
 for size in sampleSize:
     xValues = numpy.random.normal(xMean, numpy.sqrt(xVariance), size)
-    muValues = numpy.random.normal(muMean, numpy.sqrt(muVariance), size)
+    muValues = numpy.random.normal(uMean, numpy.sqrt(uVariance), size)
     yValues = []
     for index in range(0, size):
         yValues.append(modelCompute(xValues[index], beta0, beta1, muValues[index]))  
