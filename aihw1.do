@@ -23,7 +23,8 @@ graph2tex, epsfile(/Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/ge
 //-----------------------------------------------------------------
 // 1b Now apply the partialling-out method (a.k.a. Frisch-Waugh-Lovell Theorem) to the multivariate regression
 // 1b1. run a regression of log-wages on a constant, experience, experience-squared, the gender indicator, and the marital status indicators
-reg lnw ed exp exp2 female mar
+use german, clear
+reg lnw exp exp2 female mar
 outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/01-par1.tex, tex(frag) replace
 // 1b2. save the residuals using STATA command [predict variable name, residual]
 predict r1, resid
@@ -35,12 +36,18 @@ outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/01-par
 predict r2, resid
 
 // 1b5. regress the residuals from (ii) on the residuals from (iv), while adjusting for heteroskedasticity.
+reg r1 r2
+outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/01-par3.tex, stats(coef se tstat) tex(frag) replace
+
 reg r1 r2, robust
-outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/01-par3.tex, tex(frag) replace
+outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/01-par3-robust.tex, stats(coef se tstat) tex(frag) replace
+
 // 1b6. Compare this regression coefficient to the one (the coefficient on years of schooling) from the multivariate regression in part (a). Are they the same?  What about standard errors and t-statistics?  
+reg lnw ed exp exp2 female mar
+outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/01-par4.tex, stats(coef se tstat) tex(frag) replace
 
-
-
+reg lnw ed exp exp2 female mar, robust
+outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/01-par4-robust.tex, stats(coef se tstat)  tex(frag) replace
 
 //-----------------------------------------------------------------
 // Question 2
@@ -96,7 +103,8 @@ outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/02d1.t
 // 2d2. Compare the estimated return to computer use to the one from part (b).  
 
 // 2d3. Now run a regression that also controls for the individual’s occupation category as “fixed effects” [areg y x, absorb(occ) robust].  
-
+areg lnw computer ed exp exp2 female mar femmar part city beamter calc telefon pencil, absorb(occ)
+outreg2 using  /Users/aiyenggar/OneDrive/code/articles/adv-eco-hw1-images/02d3.tex, tex(frag) replace
 // 2d4. Interpret the implications of your findings for the role of potential omitted variables bias in the OLS estimate of the effect of computer use on log-wages (see DiNardo and Pischke (1997) for their interpretation).
 
 
