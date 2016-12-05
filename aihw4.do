@@ -1,4 +1,5 @@
-// 05-Dec-2016 Ashwin Iyenggar's Solution to Advanced Econometrics Homework 4
+// 05-Dec-2016 Ashwin Iyenggar's (1521001) Solution to Advanced Econometrics Homework 4
+
 
 // Setting up to use propensity score tools in Stata
 net describe psmatch2, from(http://fmwww.bc.edu/RePEc/bocode/p)
