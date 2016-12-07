@@ -58,6 +58,20 @@ save smoking_labels, replace
 cd `basepath'code/econometrics
 use smoking_labels, clear
 
+// Question (a)
+estpost ttest dbirwt, by(tobacco)
+esttab using `imagepath'a1.tex
+reg dbirwt tobacco, vce(robust)
+outreg2 using  `imagepath'a2.tex, title("Maternal Smoking Effects on Birthweight") ctitle("Random Assignment") tex(pretty frag) dec(4)
 
+// Question (b)
+// Question (c)
+// Question (d)
+// Question (e)
+// Question (f)
+// Question (g)
+// Question (h)
+// Question (i)
+// Question (j)
 
 log close
