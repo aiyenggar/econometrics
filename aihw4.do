@@ -4,8 +4,9 @@
 // Setting up to use propensity score tools in Stata
 net describe psmatch2, from(http://fmwww.bc.edu/RePEc/bocode/p)
 net describe nnmatch, from(http://fmwww.bc.edu/RePEc/bocode/n)
-// net sj 5-3 st0026_2 to search for pscore
+
 // st0026_2 contains pscore
+net sj 5-3 st0026_2
 net install st0026_2
 
 local basepath /Users/anu/OneDrive/
