@@ -123,20 +123,43 @@ sort blo31
 by blo31, sort: egen smoke=count(tobacco) if tobacco==1
 by blo31, sort: egen total=count(tobacco)
 gen fraction=smoke/total
-//drop if smoke==.
-//duplicates drop blo31, force
+drop if smoke==.
+duplicates drop blo31, force
 graph twoway (scatter fraction ps31) (function y=x, range(0 1)), ytitle("Predicted Propensity Score") xtitle("Fraction Treated") ///
 	title("Distribution of Propensity Scores Across Bins") legend(label(1 Propensity Score) label(2 45-Line))
 graph2tex, epsfile(`imagepath'e4) ht(5) caption(Fraction treated by bin)
 
 // Question (f)
+set more off
 use smoking_labels, clear
 local imagepath /Users/anu/OneDrive/code/articles/adv-eco-hw4-images/
-set more off
+
 set more off
 use smoking_labels, clear
 pscore tobacco dmage dmeduc dmar dlivord nprevist disllb dfage dfeduc  anemia diabete phyper pre4000 preterm  alcohol drink foreignb plural deadkids mblack motherr mhispan fblack fotherr fhispan tripre1 tripre2 tripre3 tripre0 first death dmeduc2 dfeduc2 dmage_mblack dmage_dmar dfage_fblack dmage_alcohol dmage_drink, pscore(ps200) blockid(blo200) logit level(0.005) numblo(201)
 save smoking.ps200.dta, replace
+
+set more off
+use smoking.ps200.dta, clear
+logit tobacco dmage dmeduc dmar dlivord nprevist disllb dfage dfeduc  anemia diabete phyper pre4000 preterm  alcohol drink foreignb plural deadkids mblack motherr mhispan fblack fotherr fhispan tripre1 tripre2 tripre3 tripre0 first death dmeduc2 dfeduc2 dmage_mblack dmage_dmar dfage_fblack dmage_alcohol dmage_drink
+predict phat
+gen phat_prime = 1-phat
+gen wt=sum(1/phat) if tobacco==1
+replace wt=sum(1/phat_prime) if tobacco==0
+egen maxwt=max(wt)
+replace wt=wt/maxwt
+reg dbirwt tobacco wt, vce(robust)
+esttab using `imagepath'f1.tex, title("Regression with individual level weights\label{f1}") mtitle("Birth Weight") replace
+
+sort blo200
+by blo200, sort: egen smoke=count(tobacco) if tobacco==1
+by blo200, sort: egen total=count(tobacco)
+gen fraction=smoke/total
+drop if smoke==.
+duplicates drop blo200, force
+graph twoway (scatter fraction ps200) (function y=x, range(0 1)), ytitle("Predicted Propensity Score (Weight)") xtitle("Fraction Treated") ///
+	title("Distribution of Propensity Scores Across 200 Bins") legend(label(1 Propensity Score) label(2 45-Line))
+graph2tex, epsfile(`imagepath'f2) ht(5) caption(Fraction treated by bin)
 
 // Question (g)
 use smoking_labels, clear
@@ -146,19 +169,55 @@ use smoking_labels, clear
 pscore tobacco dmage dmeduc dmar dlivord nprevist disllb dfage dfeduc  anemia diabete phyper pre4000 preterm  alcohol drink foreignb plural deadkids mblack motherr mhispan fblack fotherr fhispan tripre1 tripre2 tripre3 tripre0 first death dmeduc2 dfeduc2 dmage_mblack dmage_dmar dfage_fblack dmage_alcohol dmage_drink, pscore(ps100) blockid(blo100) logit level(0.001) numblo(101)
 save smoking.ps100.dta, replace
 
+use smoking.ps100.dta, clear
+local imagepath /Users/anu/OneDrive/code/articles/adv-eco-hw4-images/
+egen mps100=mean(ps100), by(blo100)
+bysort blo100: egen m_smok=mean(dbirwt) if tobacco==1
+bysort blo100: egen m_nosmok=mean(dbirwt) if tobacco==0
+label variable m_smok "Smokers"
+label variable m_nosmok "Non-Smokers"
+tw (scatter m_smok mps100) (scatter m_nosmok mps100), ytitle(birth weight in grams) xtitle(mean propensity scores in 100 bins)
+graph2tex, epsfile(`imagepath'g1) ht(5) caption(Comparison of Treatment and Control by Propensity Score (100 bins))
 
 // Question (h)
-use smoking_labels, clear
+
+use smoking.ps100.dta, clear
 local imagepath /Users/anu/OneDrive/code/articles/adv-eco-hw4-images/
+gen lowbirwt = 1 if dbirwt <= 2500
+replace lowbirwt = 0 if dbirwt > 2500
+atts lowbirwt tobacco, pscore(ps100) blockid(blo100)
+reg lowbirwt tobacco ps100, vce(robust)
+esttab using `imagepath'h1.tex, title("Propensity Score Regression (100 bins)\label{h1}") mtitle("Low Birth Weight") replace
 
-
-
+use smoking.ps200.dta, clear
+local imagepath /Users/anu/OneDrive/code/articles/adv-eco-hw4-images/
+gen lowbirwt = 1 if dbirwt <= 2500
+replace lowbirwt = 0 if dbirwt > 2500
+atts lowbirwt tobacco, pscore(ps200) blockid(blo200)
+reg lowbirwt tobacco ps200, vce(robust)
+esttab using `imagepath'h2.tex, title("Propensity Score Regression (200 bins)\label{h2}") mtitle("Low Birth Weight") replace
 
 
 // Question (i)
 use smoking_labels, clear
 local imagepath /Users/anu/OneDrive/code/articles/adv-eco-hw4-images/
+set more off
+reg death tobacco dbirwt dmage dmeduc dmar dlivord nprevist disllb dfage dfeduc  anemia diabete phyper pre4000 preterm  alcohol drink foreignb plural deadkids mblack motherr mhispan fblack fotherr fhispan tripre1 tripre2 tripre3 tripre0 first , vce(robust)
+esttab using `imagepath'i1.tex, title("tobacco Randomly Assigned Conditional on Observables\label{i1}") mtitle("Infant Death") longtable replace
 
+
+local imagepath /Users/anu/OneDrive/code/articles/adv-eco-hw4-images/
+set more off
+use smoking.ps200.dta, clear
+logit tobacco dmage dmeduc dmar dlivord nprevist disllb dfage dfeduc  anemia diabete phyper pre4000 preterm  alcohol drink foreignb plural deadkids mblack motherr mhispan fblack fotherr fhispan tripre1 tripre2 tripre3 tripre0 first death dmeduc2 dfeduc2 dmage_mblack dmage_dmar dfage_fblack dmage_alcohol dmage_drink
+predict phat
+gen phat_prime = 1-phat
+gen wt=sum(1/phat) if tobacco==1
+replace wt=sum(1/phat_prime) if tobacco==0
+egen maxwt=max(wt)
+replace wt=wt/maxwt
+reg death tobacco wt, vce(robust)
+esttab using `imagepath'i2.tex, title("Regression with individual level weights\label{i2}") mtitle("Infant Death") replace
 
 // Question (j)
 
