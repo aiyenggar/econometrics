@@ -98,8 +98,6 @@ xi: areg lnw computer school exp exp2 female married femmar i.german i.math i.fa
 outreg2 using `imagepath'1hIIIa.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label  append
 */
 
-local imagepath /Users/aiyenggar/OneDrive/code/articles/mci-assignment-images/
-
 areg lnw calc school exp exp2 female married femmar if year==1985, absorb(occ)
 outreg2 using `imagepath'1hIIIb.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, No, Father Occupation Dummies, No) label replace
 
