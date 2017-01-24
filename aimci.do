@@ -12,16 +12,40 @@ cap log close
 
 log using aimciq1.log, replace
 use d_p.dta, clear
+gen exp2=(exp^2)/100
+gen femmar=female*married
+gen d1985 = 1 if year==1985
+replace d1985 = 0 if missing(d1985)
+gen computer1985 = computer * d1985
+
+label variable computer "Computer User (Dummy)"
+label variable school "Years of Schooling"
+label variable exp "Experience"
+label variable exp2 "Experience Squared"
+label variable female "Female (Dummy)"
+label variable married "Married (Dummy)"
+label variable femmar "Female * Married (Dummy)"
+label variable lnw "Log (Wage)"
+label variable d1985 "1985 (Dummy)"
+label variable computer1985 "Computer User * 1985 (Dummy)" 
+label variable german "German Grade"
+label variable math "Math Grade"
+label variable occ "Occupation"
+label variable father "Father Occupation"
+label variable pencil "Pencil User (Dummy)"
+label variable teleph "Telephone User (Dummy)"
+label variable calc "Calculator User (Dummy)"
+label variable hammer "Physical Tools User (Dummy)"
+label variable sit "Sedantary Worker (Dummy)"
 
 // Question 1(a)
 desc year
 tab year
 estpost ttest lnw if year==1979, by(computer)
-esttab using `imagepath'1a.tex, title("T-test of log wages in 1979 by computer usage\label{1a}") mtitle("Mean Difference") se replace
+esttab using `imagepath'1a.tex, title("T-test of log wages in 1979 by computer usage\label{1a}") mtitle("Mean Difference") se label replace
 
 reg lnw computer if year==1979
-outreg2 using `imagepath'1a1.tex, title("Regression of log wages in 1979 on computer usage\label{1a1}") ctitle("Log Hourly Wage") tex(pretty frag) replace
-
+outreg2 using `imagepath'1a1.tex, title("Regression of log wages in 1979 on computer usage\label{1a1}")  tex(pretty frag) label replace
 
 summ lnw if year==1979 & computer==1
 ttest lnw if year==1985, by(computer)
@@ -30,20 +54,67 @@ ttest lnw if year==1985, by(computer)
 // Question 1(c)
 
 estpost ttest german math school exp female married lnw sit pencil teleph calc hammer city civser father occ if year==1979, by(computer)
-esttab using `imagepath'1c.tex, title("T-tests by computer usage\label{1c}") mtitle("Mean Difference") se compress nogaps replace
+esttab using `imagepath'1c.tex, title("T-tests by computer usage\label{1c}") mtitle("Mean Difference") se  label replace
 
 // Question 1(d)
 // Question 1(e)
-gen exp2=(exp^2)/100
-local imagepath /Users/aiyenggar/OneDrive/code/articles/mci-assignment-images/
-reg lnw computer school exp exp2 c.female##c.married if year==1985
-outreg2 using `imagepath'1e.tex, title("The effect of computer use on log wages\label{1e}") ctitle("Log Hourly Wage") nocons tex(pretty frag) replace
+
+
+reg lnw computer school exp exp2 female married femmar if year==1985
+outreg2 using `imagepath'1e.tex, title("The effect of computer use on log wages\label{1e}")  nocons tex(pretty frag) label replace
 
 // Question 1(f)
+
+reg lnw computer school exp exp2 female married femmar d1985 computer1985
+outreg2 using `imagepath'1e.tex, title("The effect of computer use on log wages\label{1e}")  nocons tex(pretty frag) label append
+
 // Question 1(g)
 // Question 1(h)(I)
+areg lnw computer school exp exp2 female married femmar if year==1979, absorb(occ)
+outreg2 using `imagepath'1hI.tex,  nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, No, Father Occupation Dummies, No) label replace
+
 // Question 1(h)(II)
+xi: areg lnw computer school exp exp2 female married femmar i.german i.math i.father if year==1979, absorb(occ)
+outreg2 using `imagepath'1hI.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label append
+
 // Question 1(h)(III)
+xi: areg lnw calc school exp exp2 female married femmar i.german i.math i.father if year==1979, absorb(occ)
+outreg2 using `imagepath'1hIIIa.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label replace
+
+xi: areg lnw teleph school exp exp2 female married femmar i.german i.math i.father if year==1979, absorb(occ)
+outreg2 using `imagepath'1hIIIa.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label append
+
+xi: areg lnw pencil school exp exp2 female married femmar i.german i.math i.father if year==1979, absorb(occ)
+outreg2 using `imagepath'1hIIIa.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label append
+
+xi: areg lnw sit school exp exp2 female married femmar i.german i.math i.father if year==1979, absorb(occ)
+outreg2 using `imagepath'1hIIIa.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label append
+
+xi: areg lnw hammer school exp exp2 female married femmar i.german i.math i.father if year==1979, absorb(occ)
+outreg2 using `imagepath'1hIIIa.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label append
+
+/*
+xi: areg lnw computer school exp exp2 female married femmar i.german i.math i.father if year==1979, absorb(occ)
+outreg2 using `imagepath'1hIIIa.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, Yes, Father Occupation Dummies, Yes) label  append
+*/
+
+local imagepath /Users/aiyenggar/OneDrive/code/articles/mci-assignment-images/
+
+areg lnw calc school exp exp2 female married femmar if year==1985, absorb(occ)
+outreg2 using `imagepath'1hIIIb.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, No, Father Occupation Dummies, No) label replace
+
+areg lnw teleph school exp exp2 female married femmar if year==1985, absorb(occ)
+outreg2 using `imagepath'1hIIIb.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, No, Father Occupation Dummies, No) label append
+
+areg lnw pencil school exp exp2 female married femmar if year==1985, absorb(occ)
+outreg2 using `imagepath'1hIIIb.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, No, Father Occupation Dummies, No) label append
+
+areg lnw sit school exp exp2 female married femmar if year==1985, absorb(occ)
+outreg2 using `imagepath'1hIIIb.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, No, Father Occupation Dummies, No) label append
+
+areg lnw hammer school exp exp2 female married femmar if year==1985, absorb(occ)
+outreg2 using `imagepath'1hIIIb.tex,  drop(_*) nocons tex(pretty frag) addtext(Occupation dummies, Yes, German and Math Score Dummies, No, Father Occupation Dummies, No) label append
+
 // Question 1(h)(IV)
 
 log close
