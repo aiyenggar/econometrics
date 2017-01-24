@@ -11,26 +11,34 @@ cap log close
 //-----------------------------------------------------------------
 
 log using aimciq1.log, replace
-use d_p.dta
+use d_p.dta, clear
 
 // Question 1(a)
 desc year
 tab year
+estpost ttest lnw if year==1979, by(computer)
+esttab using `imagepath'1a.tex, title("T-test of log wages in 1979 by computer usage\label{1a}") mtitle("Mean Difference") se replace
 
-ttest lnw if year==1979, by(computer)
-// mean lnw for computer users = 2.553225, for non computer users = 2.419198
-// difference = 0.1340268
+reg lnw computer if year==1979
+outreg2 using `imagepath'1a1.tex, title("Regression of log wages in 1979 on computer usage\label{1a1}") ctitle("Log Hourly Wage") tex(pretty frag) replace
+
 
 summ lnw if year==1979 & computer==1
-
 ttest lnw if year==1985, by(computer)
 
 // Question 1(b)
-// We would need random assignment of computer and non computer users in the sample
-
 // Question 1(c)
+
+estpost ttest german math school exp female married lnw sit pencil teleph calc hammer city civser father occ if year==1979, by(computer)
+esttab using `imagepath'1c.tex, title("T-tests by computer usage\label{1c}") mtitle("Mean Difference") se compress nogaps replace
+
 // Question 1(d)
 // Question 1(e)
+gen exp2=(exp^2)/100
+local imagepath /Users/aiyenggar/OneDrive/code/articles/mci-assignment-images/
+reg lnw computer school exp exp2 c.female##c.married if year==1985
+outreg2 using `imagepath'1e.tex, title("The effect of computer use on log wages\label{1e}") ctitle("Log Hourly Wage") nocons tex(pretty frag) replace
+
 // Question 1(f)
 // Question 1(g)
 // Question 1(h)(I)
@@ -73,7 +81,6 @@ reg lnthsemp mico mppa mgfa, robust cluster(state)
 outreg2 using  `imagepath'2c.tex, title("Regression with Robust Cluster SE\label{2c}") ctitle("ln(temporary employment)") tex(pretty frag) dec(4) label replace
 
 // Question 2(d)
-
 levelsof state, local(lstate)
 foreach ls of local lstate {
 	gen dstate`ls' = 1 if state==`ls'
@@ -96,7 +103,6 @@ est store model2
 esttab model1 model2 using `imagepath'2d.tex, title("Regression with Year and State Controls\label{2d}") longtable se not drop(d*) scalars("Model") addn("Reference Year is 79 for Year Dummies Model" "Reference State is 11 (ME) for State Dummies Model") label replace
 
 // Question 2(e)
-
 gen age=year-78
 foreach var of varlist dstate* {
   gen tt`var' = `var'*age
@@ -123,7 +129,6 @@ outreg2 using  `imagepath'2f.tex, drop (mppa mgfa dyear* dstate* tt*) tex(pretty
 // Question 2(g)
 // Question 2(h)
 // Question 2(i)
-local imagepath /Users/aiyenggar/OneDrive/code/articles/mci-assignment-images/
 label variable admico_2 "Law change t+2"
 label variable admico_1 "Law change t+1"
 label variable admico0 "Law change t0"
