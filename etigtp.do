@@ -1,5 +1,20 @@
 use "~/datafiles/patents/rawinventor_region.2001.dta", clear
-compress region
+merge m:1 patent_id using ~/datafiles/patents/patent.lnmodularity.dta
+drop if _merge==2
+drop _merge
+
+merge m:1 country using "~/datafiles/patents/country_ipr.dta"
+drop if _merge==2
+drop _merge
+
+merge m:1 patent_id using "~/datafiles/patents/nber.dta"
+drop if _merge==2
+drop _merge
+drop uuid
+save "~/datafiles/patents/etig.dta", replace
+
+use "~/datafiles/patents/etig.dta", clear
+
 sort inventor_id year
 bysort inventor_id: gen regionchange = region != region[_n-1] | (_n == 1) if !missing(region) & !missing(region[_n-1])
 replace regionchange=0 if missing(regionchange)
@@ -39,7 +54,7 @@ replace team_highest_noninventor = team_rank2 if missing(team_highest_noninvento
 
 keep if inventor_year_index==1
 drop inventor_year_index
-drop region region_source patent_id country
+//drop region region_source patent_id country
 
 gen intr_regchg_invpool = regionchange * inventor_pool
 gen intr_couchg_invpool = countrychange * inventor_pool
@@ -47,34 +62,30 @@ gen intr_couchg_invpool = countrychange * inventor_pool
 gen intr_regchg_teampool = regionchange * team_highest_noninventor
 gen intr_couchg_teampool = countrychange * team_highest_noninventor
 
-label variable invpatentsyear "Productivity"
-label variable regionchange "Moved Region (MR)"
-label variable countrychange "Moved Country (MC)"
-label variable inventor_pool "Prior Patents of Inventor (PPI)"
-label variable team_highest_noninventor "Prior Patents of Team (PPT)"
-label variable intr_regchg_invpool "MR x PPI"
-label variable intr_couchg_invpool "MC x PPI"
-label variable intr_regchg_teampool "MR x PPT"
-label variable intr_couchg_teampool "MC x PPT"
-
-// Should I be adding up the invpatentsyear? Or has it already been?
-
-save "~/datafiles/patents/mci.2001.dta", replace
-
-
-use "~/datafiles/patents/mci.2001.dta", clear
-reg invpatentsyear regionchange countrychange
-outreg2 using  "~/OneDrive/code/articles/mci-term-paper-images/Ia.tex", label drop (_*) tex(pretty frag) dec(4) replace
-
-reg invpatentsyear regionchange countrychange inventor_pool ///
-	team_highest_noninventor
-outreg2 using  "~/OneDrive/code/articles/mci-term-paper-images/Ia.tex", label drop (_*) tex(pretty frag) dec(4) append
-
-reg invpatentsyear regionchange countrychange inventor_pool ///
+reg lnc regionchange countrychange inventor_pool ///
 	team_highest_noninventor intr_regchg_invpool intr_couchg_invpool ///
 	intr_regchg_teampool intr_couchg_teampool
-outreg2 using  "~/OneDrive/code/articles/mci-term-paper-images/Ia.tex", title("Mobility of Inventors and Productivity of Inventors") label drop (_*) tex(pretty frag) dec(4) append
+save "~/datafiles/patents/etig.2001.dta", replace
 
+use "~/datafiles/patents/etig.2001.dta", clear
+gen regionipr = regionchange * ipr_score
+gen countryipr = countrychange * ipr_score
+
+label variable lnc "log(complexity)"
+label variable regionchange "changed region"
+label variable countrychange "changed country"
+label variable ipr_score "IPR score"
+label variable regionipr "changed region * IPR score"
+label variable countryipr "changed country * IPR score"
+
+reg lnc regionchange countrychange 
+outreg2 using  "~/OneDrive/code/articles/etig-term-paper-presentation-images/Ia.tex", label drop (_*) tex(pretty frag) dec(4) replace
+
+reg lnc regionchange countrychange ipr_score 
+outreg2 using  "~/OneDrive/code/articles/etig-term-paper-presentation-images/Ia.tex", label drop (_*) tex(pretty frag) dec(4) append
+
+reg lnc regionchange countrychange ipr_score regionipr countryipr
+outreg2 using  "~/OneDrive/code/articles/etig-term-paper-presentation-images/Ia.tex", title("Mobility of Inventors and Complexity of Innovations") label drop (_*) tex(pretty frag) dec(4) append
 
 //keep if regionchange==1 | countrychange == 1
 duplicates drop inventor_id year, force
