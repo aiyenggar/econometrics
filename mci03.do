@@ -66,6 +66,7 @@ lincom 1.married + 1.female#1.married
 
 * 4(vii) margins command
 margins, dydx(married) at (female=1)
+// at means - this is an alternative: Vidhya says that this is a really useful command
 
 * 4(viii) FWL theorem
 reg lndwage potexp potexpsq if !missing(lndwage)
