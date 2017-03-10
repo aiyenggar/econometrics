@@ -1,6 +1,8 @@
 cd "~/OneDrive/code/articles/etig-term-paper-presentation-images"
 use "~/datafiles/patents/etig.master.dta", clear
 
+sutex regionchange countrychange lnc inventor_pool team_highest_noninventor, labels
+
 eststo clear
 
 reg lnc regionchange countrychange 
